@@ -23,14 +23,13 @@
       overflow-x: hidden;
     }
 
-    /* INTRO SCREEN STYLES (UPDATED FOR TRANSPARENCY) */
+    /* INTRO SCREEN STYLES */
     #introScreen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      /* CHANGED: Use rgba with opacity 0.85 */
       background: rgba(248, 248, 248, 0.85); 
       display: flex;
       flex-direction: column;
@@ -39,13 +38,11 @@
       text-align: center;
       z-index: 10000;
       transition: opacity 0.5s ease;
-      /* Ensure it captures clicks when visible */
       pointer-events: auto; 
     }
     #introScreenContent {
       padding: 30px;
       border-radius: 20px;
-      /* CHANGED: Ensure content box is fully opaque white */
       background: rgba(255, 255, 255, 1);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
       max-width: 90vw;
@@ -56,6 +53,15 @@
       line-height: 1.6;
       margin-bottom: 20px;
       color: #333;
+    }
+    /* NEW: Festive Highlight for Intro Text */
+    .highlight-festive {
+      font-weight: 800;
+      /* Use a gradient for a multi-color festive effect */
+      background: linear-gradient(45deg, #b30000, #d4af37, #0b7a24);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
     }
     #startButton {
       padding: 12px 24px;
@@ -120,7 +126,6 @@
       justify-content: center;
       align-items: flex-start;
       max-width: 700px;
-      /* Game elements are visible underneath the intro screen */
     }
 
     /* Tree wrapper */
@@ -367,8 +372,8 @@
     <div id="introScreenContent">
       <h1>Willkommen zu Türchen 12!</h1>
       <p>
-        Kannst du alle **13 Begriffe** finden, die im Baum versteckt sind?<br>
-        Alles sind **Personen oder Dinge, die dir wichtig sind** (Girls Only heute 😉).<br>
+        Kannst du alle <span class="highlight-festive">13 Begriffe</span> finden, die im Baum versteckt sind?<br>
+        Alles sind <span class="highlight-festive">Personen oder Dinge, die dir wichtig sind</span> (Girls Only heute 😉).<br>
         Viel Spaß!
       </p>
       <button id="startButton">Los geht's!</button>
