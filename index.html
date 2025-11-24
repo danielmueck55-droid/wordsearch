@@ -23,6 +23,58 @@
       overflow-x: hidden;
     }
 
+    /* INTRO SCREEN STYLES (UPDATED FOR TRANSPARENCY) */
+    #introScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      /* CHANGED: Use rgba with opacity 0.85 */
+      background: rgba(248, 248, 248, 0.85); 
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 10000;
+      transition: opacity 0.5s ease;
+      /* Ensure it captures clicks when visible */
+      pointer-events: auto; 
+    }
+    #introScreenContent {
+      padding: 30px;
+      border-radius: 20px;
+      /* CHANGED: Ensure content box is fully opaque white */
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      max-width: 90vw;
+      border: 8px solid #b30000;
+    }
+    #introScreen p {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    #startButton {
+      padding: 12px 24px;
+      border-radius: 999px;
+      background: #0b7a24;
+      color: white;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+    #startButton:hover {
+      background: #09661e;
+      transform: translateY(-1px);
+    }
+    /* END INTRO SCREEN STYLES */
+
     h1 {
       font-family: 'Great Vibes', cursive;
       font-size: 3rem;
@@ -68,6 +120,7 @@
       justify-content: center;
       align-items: flex-start;
       max-width: 700px;
+      /* Game elements are visible underneath the intro screen */
     }
 
     /* Tree wrapper */
@@ -296,13 +349,13 @@
         align-items: center;
       }
       #wordPanel {
-        text-align: center; /* ADDED: Center block-level content (like <ul>) */
+        text-align: center;
       }
       #wordPanel h3 {
-        text-align: center; /* CHANGED: Center the heading */
+        text-align: center;
       }
       #wordPanel ul {
-        display: inline-block; /* ADDED: Allows the <ul> to be centered by parent's text-align */
+        display: inline-block;
       }
     }
   </style>
@@ -310,6 +363,17 @@
 
 <body>
 
+  <div id="introScreen">
+    <div id="introScreenContent">
+      <h1>Willkommen zu Türchen 12!</h1>
+      <p>
+        Kannst du alle **13 Begriffe** finden, die im Baum versteckt sind?<br>
+        Alles sind **Personen oder Dinge, die dir wichtig sind** (Girls Only heute 😉).<br>
+        Viel Spaß!
+      </p>
+      <button id="startButton">Los geht's!</button>
+    </div>
+  </div>
   <canvas id="confettiCanvas"
           style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
                  pointer-events: none; z-index: 999999; display: none;"></canvas>
@@ -320,38 +384,37 @@
   <div id="frame">
     <div id="treeWrapper">
       <div id="treeSvgWrapper">
-  <div id="treeSvgScale">
-    <svg id="treeSvg" viewBox="0 0 200 260" preserveAspectRatio="xMidYMid meet">
+        <div id="treeSvgScale">
+          <svg id="treeSvg" viewBox="0 0 200 260" preserveAspectRatio="xMidYMid meet">
+            <polygon class="tree-star"
+                     points="100,8 106,22 121,22 109,31 114,45 100,37 86,45 91,31 79,22 94,22"/>
+            <path class="tree-outline"
+        d="M100 18
+           L40 80 L75 80
+           L5 150 L53 150
+           L-20 220 L30 220
+           L126 220 L220 220
+           L147 150 L193 150
+           L126 79 L160 79 Z" />
 
-          <polygon class="tree-star"
-                   points="100,8 106,22 121,22 109,31 114,45 100,37 86,45 91,31 79,22 94,22"/>
-          <path class="tree-outline"
-      d="M100 18
-         L40 80 L75 80
-         L5 150 L53 150
-         L-20 220 L30 220
-         L126 220 L220 220
-         L147 150 L193 150
-         L126 79 L160 79 Z" />
+            <circle class="tree-garland" cx="50" cy="70" r="3.2"/>
+            <circle class="tree-garland" cx="130" cy="78" r="3.2"/>
+            <circle class="tree-garland" cx="45" cy="110" r="3.2"/>
+            <circle class="tree-garland" cx="165" cy="120" r="3.2"/>
+            <circle class="tree-garland" cx="65" cy="150" r="3.2"/>
+            <circle class="tree-garland" cx="115" cy="160" r="3.2"/>
+            <circle class="tree-garland" cx="10" cy="190" r="3.2"/>
+            <circle class="tree-garland" cx="195" cy="195" r="3.2"/>
 
-          <circle class="tree-garland" cx="50" cy="70" r="3.2"/>
-          <circle class="tree-garland" cx="130" cy="78" r="3.2"/>
-          <circle class="tree-garland" cx="45" cy="110" r="3.2"/>
-          <circle class="tree-garland" cx="165" cy="120" r="3.2"/>
-          <circle class="tree-garland" cx="65" cy="150" r="3.2"/>
-          <circle class="tree-garland" cx="115" cy="160" r="3.2"/>
-          <circle class="tree-garland" cx="10" cy="190" r="3.2"/>
-          <circle class="tree-garland" cx="195" cy="195" r="3.2"/>
-
-          <circle class="tree-sparkle" cx="55" cy="52" r="1.8"/>
-          <circle class="tree-sparkle" cx="145" cy="70" r="1.8"/>
-          <circle class="tree-sparkle" cx="50" cy="125" r="1.5"/>
-          <circle class="tree-sparkle" cx="155" cy="135" r="1.5"/>
-          <circle class="tree-sparkle" cx="60" cy="200" r="1.5"/>
-          <circle class="tree-sparkle" cx="150" cy="210" r="1.5"/>
-          </svg>
-  </div>
-</div>
+            <circle class="tree-sparkle" cx="55" cy="52" r="1.8"/>
+            <circle class="tree-sparkle" cx="145" cy="70" r="1.8"/>
+            <circle class="tree-sparkle" cx="50" cy="125" r="1.5"/>
+            <circle class="tree-sparkle" cx="155" cy="135" r="1.5"/>
+            <circle class="tree-sparkle" cx="60" cy="200" r="1.5"/>
+            <circle class="tree-sparkle" cx="150" cy="210" r="1.5"/>
+            </svg>
+      </div>
+    </div>
 
 
       <div id="treeGrid"></div>
@@ -507,8 +570,12 @@ const solutionColors = [
 ];
 
 /* ==========================
-   BUILD GRID + WORD LIST
+   GAME ELEMENTS & STATE
 ========================== */
+
+const introScreen = document.getElementById("introScreen");
+const startButton = document.getElementById("startButton");
+const frame       = document.getElementById("frame"); // Main game frame
 
 const treeGrid    = document.getElementById("treeGrid");
 const treeWrapper = document.getElementById("treeWrapper");
@@ -517,59 +584,87 @@ const winMessage  = document.getElementById("winMessage");
 const restartBtn  = document.getElementById("restartButton");
 
 let width = 0;
-treeRows.forEach(r => { if (r.length > width) width = r.length; });
-
-const height = treeRows.length;
-const offsets = treeRows.map(r => Math.floor((width - r.length) / 2));
-
-const board = Array.from({ length: height }, () => Array(width).fill(null));
-const cells = Array.from({ length: height }, () => Array(width).fill(null));
-
-for (let y = 0; y < height; y++) {
-  const row = treeRows[y];
-  const off = offsets[y];
-  for (let x = 0; x < width; x++) {
-    let ch = null;
-    if (x >= off && x < off + row.length) {
-      ch = row[x - off];
-    }
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    if (ch === null) {
-      cell.classList.add("blank");
-      cell.textContent = "";
-    } else {
-      cell.textContent = ch;
-      cell.dataset.x = x;
-      cell.dataset.y = y;
-      cell.addEventListener("click", onCellClick);
-      cell.addEventListener("touchstart", onTouchStart, { passive: false });
-    }
-    board[y][x] = ch;
-    cells[y][x] = cell;
-    treeGrid.appendChild(cell);
-  }
-}
-
-// build word list
-words.forEach((w, index) => {
-  const li = document.createElement("li");
-  li.textContent = w.display;
-  li.dataset.index = index;
-  wordListEl.appendChild(li);
-  w.liElement = li;
-  w.found = false;
-});
-
-/* ==========================
-   SELECTION + TOUCH LOGIC
-========================== */
+let height = 0;
+let offsets = [];
+let board = [];
+let cells = [];
 
 let selectionStart = null;
 let activeCells = [];
 let foundCount = 0;
 let currentTouchPath = null;
 let wordHighlights = [];
+
+/* ==========================
+   INITIALIZATION
+========================== */
+
+startButton.addEventListener("click", startGame);
+
+function startGame() {
+  // 1. Hide intro screen
+  introScreen.style.opacity = '0';
+  // Disable pointer events so user can interact with game underneath
+  introScreen.style.pointerEvents = 'none'; 
+  setTimeout(() => {
+    introScreen.style.display = 'none';
+  }, 500);
+
+  // 2. Build the grid and word list (now that we know the user is ready)
+  buildGridAndWords();
+}
+
+function buildGridAndWords() {
+  width = 0;
+  treeRows.forEach(r => { if (r.length > width) width = r.length; });
+
+  height = treeRows.length;
+  offsets = treeRows.map(r => Math.floor((width - r.length) / 2));
+
+  board = Array.from({ length: height }, () => Array(width).fill(null));
+  cells = Array.from({ length: height }, () => Array(width).fill(null));
+
+  for (let y = 0; y < height; y++) {
+    const row = treeRows[y];
+    const off = offsets[y];
+    for (let x = 0; x < width; x++) {
+      let ch = null;
+      if (x >= off && x < off + row.length) {
+        ch = row[x - off];
+      }
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      if (ch === null) {
+        cell.classList.add("blank");
+        cell.textContent = "";
+      } else {
+        cell.textContent = ch;
+        cell.dataset.x = x;
+        cell.dataset.y = y;
+        cell.addEventListener("click", onCellClick);
+        cell.addEventListener("touchstart", onTouchStart, { passive: false });
+      }
+      board[y][x] = ch;
+      cells[y][x] = cell;
+      treeGrid.appendChild(cell);
+    }
+  }
+
+  // build word list
+  words.forEach((w, index) => {
+    const li = document.createElement("li");
+    li.textContent = w.display;
+    li.dataset.index = index;
+    wordListEl.appendChild(li);
+    w.liElement = li;
+    w.found = false;
+  });
+}
+
+
+/* ==========================
+   SELECTION + TOUCH LOGIC
+========================== */
 
 function clearActive() {
   activeCells.forEach(c => c.classList.remove("active"));
