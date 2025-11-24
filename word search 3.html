@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wortsuche – Türchen 12</title>
+
+  <!-- Festive Calligraphy Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding-top: 20px;
+      background: linear-gradient(#f8f8f8, #d8e3f0);
+      background-image:
+        url('data:image/svg+xml,%3Csvg width="100" height="100" xmlns="http://www.w3.org/2000/svg"%3E%3Ctext x="10" y="55" font-size="20" fill="%23e0e0e0"%3E✻%3C/text%3E%3C/svg%3E'),
+        url('data:image/svg+xml,%3Csvg width="120" height="120" xmlns="http://www.w3.org/2000/svg"%3E%3Ctext x="15" y="65" font-size="22" fill="%23f2d4d4"%3E✦%3C/text%3E%3C/svg%3E');
+      background-repeat: repeat;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3rem;
+      color: #b30000;
+      margin: 0;
+      text-shadow: 0 0 4px rgba(255,255,255,0.7);
+    }
+
+    h2 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2rem;
+      color: #b30000;
+      margin: 0;
+      text-shadow: 0 0 4px rgba(255,255,255,0.7);
+    }
+
+    /* Snowflakes */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 20px;
+      opacity: 0.75;
+      animation: fall linear infinite;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    @keyframes fall { to { transform: translateY(110vh); } }
+
+    /* Frame around puzzle + word list */
+    #frame {
+      padding: 15px 20px;
+      border: 8px solid #b30000;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      margin-top: 20px;
+      transition: all 0.8s ease;
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      justify-content: center;
+      align-items: flex-start;
+      max-width: 900px;
+    }
+
+    #treeWrapper {
+      padding: 10px;
+      border-radius: 24px;
+    }
+
+    /* New inner wrapper so SVG and grid align perfectly */
+    #treeInner {
+      position: relative;
+      display: inline-block;
+    }
+
+    #treeSvgWrapper {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #treeSvg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .tree-outline {
+      fill: none;
+      stroke: #0ea350;
+      stroke-width: 3;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 5px rgba(14,163,80,0.8));
+    }
+
+    #treeGrid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(19, 30px);
+      grid-auto-rows: 30px;
+      gap: 4px;
+      justify-content: center;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .cell {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease,
+                  box-shadow 0.12s ease,
+                  background 0.12s ease;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cell:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .cell.blank {
+      visibility: hidden;
+      border: none;
+      cursor: default;
+      box-shadow: none;
+      background: transparent;
+    }
+
+    .cell.active {
+      background: rgba(255,255,255,0.2);
+      box-shadow: 0 0 6px rgba(179,0,0,0.4);
+    }
+
+    .cell.found {
+      font-weight: 700;
+    }
+
+    /* Colored capsule highlight behind found words */
+    .wordHighlight {
+      position: absolute;
+      z-index: 1; /* behind letters but above outline */
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,0.9);
+      box-shadow:
+        0 0 8px rgba(0,0,0,0.25),
+        0 0 16px rgba(0,0,0,0.15);
+      pointer-events: none;
+      box-sizing: border-box;
+      opacity: 0.95;
+    }
+
+    /* Word list */
+    #wordPanel {
+      min-width: 180px;
+    }
+
+    #wordPanel h3 {
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 16px;
+      margin: 4px 0 8px;
+      text-align: center;
+      border-bottom: 1px solid #000;
+      padding-bottom: 4px;
+    }
+
+    #wordPanel ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      font-size: 15px;
+    }
+
+    #wordPanel li {
+      padding: 2px 0;
+      letter-spacing: 0.06em;
+    }
+
+    #wordPanel li.foundWord {
+      color: #777;
+      text-decoration: line-through;
+    }
+
+    /* Win message */
+    #winMessage {
+      margin-top: 18px;
+      background: rgba(255,255,255,0.94);
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 17px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.25);
+      opacity: 0;
+      transform: translateY(18px);
+      transition: all 0.8s ease;
+      display: none;
+      text-align: center;
+      max-width: 92vw;
+    }
+
+    #winMessage h2 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.3rem;
+      margin: 0;
+      background: linear-gradient(45deg, #b30000, #d4af37, #008000);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 7px rgba(255,255,255,0.7);
+      animation: winPop 0.9s ease-out forwards, glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes winPop {
+      0% { transform: scale(0.5) rotate(-6deg); opacity: 0; }
+      60% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes glow {
+      0% { text-shadow: 0 0 6px rgba(255,255,255,0.6); }
+      100% { text-shadow: 0 0 12px rgba(255,255,255,1); }
+    }
+
+    #restartButton {
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #b30000;
+      color: white;
+      border: none;
+      font-size: 17px;
+      cursor: pointer;
+      margin-top: 10px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.7s ease, transform 0.7s ease, background 0.2s ease;
+    }
+    #restartButton:hover { background: #d00000; }
+
+    @keyframes confettiFadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
+    /* Responsive word panel stacking */
+    @media (max-width: 650px) {
+      #frame {
+        flex-direction: column;
+        align-items: center;
+      }
+      #wordPanel {
+        align-self: stretch;
+      }
+      #wordPanel h3 {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Confetti canvas -->
+  <canvas id="confettiCanvas"
+          style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                 pointer-events: none; z-index: 999999; display: none;"></canvas>
+
+  <h1>Felice Adventskalender</h1>
+  <h2>Türchen 12 🎄🔍</h2>
+
+  <div id="frame">
+    <div id="treeWrapper">
+      <div id="treeInner">
+        <div id="treeSvgWrapper">
+          <svg id="treeSvg"></svg>
+        </div>
+        <div id="treeGrid"></div>
+      </div>
+    </div>
+
+    <div id="wordPanel">
+      <h3>WORTLISTE</h3>
+      <ul id="wordList">
+        <!-- filled by JS -->
+      </ul>
+    </div>
+  </div>
+
+  <div id="winMessage">
+    <h2>Geschafft!</h2>
+    <p>Du hast alle Wörter im Weihnachtsbaum gefunden. 🎄✨</p>
+    <button id="restartButton">Noch mal spielen</button>
+  </div>
+
+<script>
+/* Snowflakes */
+for (let i = 0; i < 20; i++) {
+  const f = document.createElement('div');
+  f.className = 'snowflake';
+  f.textContent = '❅';
+  f.style.left = Math.random() * 100 + 'vw';
+  f.style.animationDuration = 5 + Math.random() * 5 + 's';
+  f.style.animationDelay = Math.random() * 5 + 's';
+  document.body.appendChild(f);
+}
+
+/* ==========================
+   CONFETTI ENGINE
+========================== */
+
+const confettiCanvas = document.getElementById("confettiCanvas");
+const ctx = confettiCanvas.getContext("2d");
+let confettiPieces = [];
+let confettiActive = false;
+
+function startConfetti() {
+  confettiActive = true;
+  confettiCanvas.style.display = "block";
+  resizeCanvas();
+  createConfetti();
+  requestAnimationFrame(updateConfetti);
+  setTimeout(() => fadeOutConfetti(), 2000);
+}
+
+function fadeOutConfetti() {
+  confettiCanvas.style.animation = "confettiFadeOut 2.5s forwards";
+  setTimeout(() => {
+    stopConfetti();
+    confettiCanvas.style.animation = "";
+  }, 2100);
+}
+
+function stopConfetti() {
+  confettiActive = false;
+  confettiPieces = [];
+  confettiCanvas.style.display = "none";
+}
+
+function resizeCanvas() {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+
+function createConfetti() {
+  const colors = ["#b30000", "#d4af37", "#ffffff", "#008000"];
+
+  for (let i = 0; i < 260; i++) {
+    confettiPieces.push({
+      x: Math.random() * confettiCanvas.width,
+      y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+      size: Math.random() * 7 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speed: Math.random() * 3 + 1.5,
+      angle: Math.random() * Math.PI * 2,
+      spin: Math.random() * 0.12 - 0.06
+    });
+  }
+}
+
+function updateConfetti() {
+  if (!confettiActive) return;
+
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+  confettiPieces.forEach(p => {
+    p.y += p.speed;
+    p.angle += p.spin;
+
+    ctx.fillStyle = p.color;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+    ctx.restore();
+  });
+
+  confettiPieces = confettiPieces.filter(p => p.y < confettiCanvas.height);
+  requestAnimationFrame(updateConfetti);
+}
+
+/* ==========================
+   WORD SEARCH DATA
+========================== */
+
+const treeRows = [
+  ["Z"],
+  ["M","B","Q"],
+  ["P","T","G","B","N"],
+  ["Q","M","B","E","R","G","T"],
+  ["Ä","E","U","K","T","A","F","D","V"],
+  ["K","N","P","R","N"],
+  ["I","M","G","Ü","I","B","T"],
+  ["E","I","M","M","E","N","Ü","A","I"],
+  ["L","J","M","G","V","M","D","N","I","N","G"],
+  ["I","M","Ü","Ö","F","N","R","E","Ü","K","E","A","U"],
+  ["Z","M","V","U","E","H","B","K","R","N","O","O","Ü","J","A"],
+  ["L","A","R","L","Ä","B","T","T","B"],
+  ["I","K","U","H","F","B","R","O","K","A","F"],
+  ["C","D","N","O","M","A","B","U","J","I","B","Ü","U"],
+  ["E","U","Z","M","E","I","L","L","E","N","T","E","E","I","D"],
+  ["Ü","Ä","W","E","L","T","A","L","L","H","M","Ö","K","U","Ä","Z","Q"],
+  ["Ü","J","Ä","R","P","F","N","I","P","Ü","E","D","S","X","K","A","T","Z","E"],
+  ["A","K","B"],
+  ["G","I","P"]
+];
+
+const words = [
+  { display: "ANTIGUA",       clean: "ANTIGUA" },
+  { display: "BEKKI",         clean: "BEKKI" },
+  { display: "EMMIE",         clean: "EMMIE" },
+  { display: "FELICE",        clean: "FELICE" },
+  { display: "JANA",          clean: "JANA" },
+  { display: "KATZE",         clean: "KATZE" },
+  { display: "KUH",           clean: "KUH" },
+  { display: "LIZ",           clean: "LIZ" },
+  { display: "NELLIE",        clean: "NELLIE" },
+  { display: "OMA",           clean: "OMA" },
+  { display: "RINDERBRUEHE",  clean: "RINDERBRUEHE" },
+  { display: "ТІКТОК",        clean: "TIKTOK" }, // shown with Cyrillic, hidden as TIKTOK
+  { display: "WELTALL",       clean: "WELTALL" }
+];
+
+// nice festive colors for different solution words
+const solutionColors = [
+  "#FF6F61", "#6B5B95", "#88B04B", "#F7CAC9",
+  "#92A8D1", "#EFC050", "#B565A7", "#45B8AC",
+  "#DD4124", "#009B77", "#5B5EA6", "#9B2335"
+];
+
+/* ==========================
+   BUILD GRID + WORD LIST
+========================== */
+
+const treeGrid    = document.getElementById("treeGrid");
+const treeWrapper = document.getElementById("treeWrapper");
+const treeInner   = document.getElementById("treeInner");
+const treeSvg     = document.getElementById("treeSvg");
+const wordListEl  = document.getElementById("wordList");
+const winMessage  = document.getElementById("winMessage");
+const restartBtn  = document.getElementById("restartButton");
+
+const cellSize = 30;
+const gap = 4;
+
+let width = 0;
+treeRows.forEach(r => { if (r.length > width) width = r.length; });
+
+const height = treeRows.length;
+const offsets = treeRows.map(r => Math.floor((width - r.length) / 2));
+
+const board = Array.from({ length: height }, () => Array(width).fill(null));
+const cells = Array.from({ length: height }, () => Array(width).fill(null));
+
+for (let y = 0; y < height; y++) {
+  const row = treeRows[y];
+  const off = offsets[y];
+  for (let x = 0; x < width; x++) {
+    let ch = null;
+    if (x >= off && x < off + row.length) {
+      ch = row[x - off];
+    }
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    if (ch === null) {
+      cell.classList.add("blank");
+      cell.textContent = "";
+    } else {
+      cell.textContent = ch;
+      cell.dataset.x = x;
+      cell.dataset.y = y;
+      cell.addEventListener("click", onCellClick);
+      cell.addEventListener("touchstart", onTouchStart, { passive: false });
+    }
+    board[y][x] = ch;
+    cells[y][x] = cell;
+    treeGrid.appendChild(cell);
+  }
+}
+
+// build word list
+words.forEach((w, index) => {
+  const li = document.createElement("li");
+  li.textContent = w.display;
+  li.dataset.index = index;
+  wordListEl.appendChild(li);
+  w.liElement = li;
+  w.found = false;
+});
+
+/* ==========================
+   AUTO-GENERATED TREE OUTLINE
+   (computed from the letter grid)
+========================== */
+
+function generateTreeOutline() {
+  const pad = 3; // distance from letters
+  const rowBounds = [];
+
+  for (let y = 0; y < height; y++) {
+    let minCol = null;
+    let maxCol = null;
+    for (let x = 0; x < width; x++) {
+      if (board[y][x] !== null) {
+        if (minCol === null || x < minCol) minCol = x;
+        if (maxCol === null || x > maxCol) maxCol = x;
+      }
+    }
+    if (minCol !== null) {
+      rowBounds.push({ y, minCol, maxCol });
+    }
+  }
+
+  if (!rowBounds.length) return;
+
+  const topRow = rowBounds[0].y;
+  const bottomRow = rowBounds[rowBounds.length - 1].y;
+
+  const gridPixelWidth  = width * cellSize + (width - 1) * gap;
+  const gridPixelHeight = height * cellSize + (height - 1) * gap;
+
+  treeSvg.setAttribute("viewBox", `0 0 ${gridPixelWidth} ${gridPixelHeight}`);
+
+  const topPoints = [];
+  const rightPoints = [];
+  const bottomPoints = [];
+  const leftPoints = [];
+
+  // helper to convert (x,y cell coords) to pixel boundaries
+  function colLeft(c)  { return c * (cellSize + gap); }
+  function colRight(c) { return c * (cellSize + gap) + cellSize; }
+  function rowTop(r)   { return r * (cellSize + gap); }
+  function rowBottom(r){ return r * (cellSize + gap) + cellSize; }
+
+  // build outline points
+  for (let i = 0; i < rowBounds.length; i++) {
+    const { y, minCol, maxCol } = rowBounds[i];
+    const tY = rowTop(y) - pad;
+    const bY = rowBottom(y) + pad;
+    const lX = colLeft(minCol) - pad;
+    const rX = colRight(maxCol) + pad;
+
+    // top edge points (right side of the tree)
+    topPoints.push({ x: lX, y: tY });
+    topPoints.push({ x: rX, y: tY });
+
+    // right edge mid
+    rightPoints.push({ x: rX, y: (tY + bY) / 2 });
+
+    // bottom edge
+    bottomPoints.push({ x: rX, y: bY });
+    bottomPoints.push({ x: lX, y: bY });
+
+    // left edge mid
+    leftPoints.push({ x: lX, y: (tY + bY) / 2 });
+  }
+
+  // Construct polygon: top (from first row), then right side down,
+  // then bottom of last row, then left side up, then close.
+  const pts = [];
+
+  // top: from left to right of first row
+  const firstTop = rowBounds[0];
+  {
+    const y = firstTop.y;
+    const tY = rowTop(y) - pad;
+    const lX = colLeft(firstTop.minCol) - pad;
+    const rX = colRight(firstTop.maxCol) + pad;
+    pts.push({ x: lX, y: tY });
+    pts.push({ x: rX, y: tY });
+  }
+
+  // right side: from second row to last
+  for (let i = 1; i < rowBounds.length; i++) {
+    const { y, maxCol } = rowBounds[i];
+    const tY = rowTop(y) - pad;
+    const bY = rowBottom(y) + pad;
+    const rX = colRight(maxCol) + pad;
+    pts.push({ x: rX, y: (tY + bY) / 2 });
+  }
+
+  // bottom edge of last row
+  const lastBottom = rowBounds[rowBounds.length - 1];
+  {
+    const y = lastBottom.y;
+    const bY = rowBottom(y) + pad;
+    const lX = colLeft(lastBottom.minCol) - pad;
+    const rX = colRight(lastBottom.maxCol) + pad;
+    pts.push({ x: rX, y: bY });
+    pts.push({ x: lX, y: bY });
+  }
+
+  // left side: from second-last row up to first
+  for (let i = rowBounds.length - 2; i >= 0; i--) {
+    const { y, minCol } = rowBounds[i];
+    const tY = rowTop(y) - pad;
+    const bY = rowBottom(y) + pad;
+    const lX = colLeft(minCol) - pad;
+    pts.push({ x: lX, y: (tY + bY) / 2 });
+  }
+
+  // close back to top-left (already there logically)
+  // Build path string
+  let d = "";
+  pts.forEach((p, i) => {
+    d += (i === 0 ? "M" : "L") + p.x + " " + p.y + " ";
+  });
+  d += "Z";
+
+  treeSvg.innerHTML = "";
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("class", "tree-outline");
+  path.setAttribute("d", d);
+  treeSvg.appendChild(path);
+}
+
+// Generate outline after layout
+window.addEventListener("load", generateTreeOutline);
+
+/* ==========================
+   SELECTION + TOUCH LOGIC
+========================== */
+
+let selectionStart = null;
+let activeCells = [];
+let foundCount = 0;
+let currentTouchPath = null;
+let wordHighlights = [];
+
+function clearActive() {
+  activeCells.forEach(c => c.classList.remove("active"));
+  activeCells = [];
+}
+
+function onCellClick(e) {
+  const cell = e.currentTarget;
+  const x = parseInt(cell.dataset.x, 10);
+  const y = parseInt(cell.dataset.y, 10);
+
+  if (!selectionStart) {
+    selectionStart = { x, y };
+    clearActive();
+    cell.classList.add("active");
+    activeCells.push(cell);
+    return;
+  }
+
+  const sx = selectionStart.x;
+  const sy = selectionStart.y;
+
+  if (sx === x && sy === y) {
+    selectionStart = null;
+    clearActive();
+    return;
+  }
+
+  const path = getLine(sx, sy, x, y);
+  if (!path) {
+    selectionStart = null;
+    clearActive();
+    return;
+  }
+
+  const matched = processSelection(path);
+  if (!matched) {
+    clearActive();
+  }
+  selectionStart = null;
+}
+
+function getLine(sx, sy, ex, ey) {
+  const dx = ex - sx;
+  const dy = ey - sy;
+  let steps = gcd(Math.abs(dx), Math.abs(dy));
+  if (steps === 0) return null;
+
+  const stepx = dx / steps;
+  const stepy = dy / steps;
+
+  const path = [];
+  for (let i = 0; i <= steps; i++) {
+    const x = sx + stepx * i;
+    const y = sy + stepy * i;
+    if (!Number.isInteger(x) || !Number.isInteger(y)) return null;
+    if (y < 0 || y >= height || x < 0 || x >= width) return null;
+    if (board[y][x] === null) return null;
+    path.push({ x, y });
+  }
+
+  clearActive();
+  path.forEach(p => {
+    const c = cells[p.y][p.x];
+    c.classList.add("active");
+    activeCells.push(c);
+  });
+
+  return path;
+}
+
+function gcd(a, b) {
+  while (b !== 0) {
+    const t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}
+
+function processSelection(path) {
+  const letters = path.map(p => board[p.y][p.x]).join("");
+  const lettersRev = letters.split("").reverse().join("");
+
+  let matchedWord = null;
+  for (const w of words) {
+    if (w.found) continue;
+    if (w.clean === letters || w.clean === lettersRev) {
+      matchedWord = w;
+      break;
+    }
+  }
+
+  if (matchedWord) {
+    matchedWord.found = true;
+    matchedWord.liElement.classList.add("foundWord");
+
+    path.forEach(p => {
+      const c = cells[p.y][p.x];
+      c.classList.remove("active");
+      c.classList.add("found");
+    });
+
+    const color = solutionColors[foundCount % solutionColors.length];
+    addWordHighlight(path, color);
+    foundCount++;
+
+    if (foundCount === words.length) {
+      onWin();
+    }
+    return true;
+  }
+
+  return false;
+}
+
+/* ---- Touch (swipe) support ---- */
+
+function onTouchStart(e) {
+  e.preventDefault();
+  const cell = e.currentTarget;
+  const x = parseInt(cell.dataset.x, 10);
+  const y = parseInt(cell.dataset.y, 10);
+
+  selectionStart = { x, y };
+  currentTouchPath = null;
+  clearActive();
+  cell.classList.add("active");
+  activeCells.push(cell);
+}
+
+function handleTouchMove(e) {
+  if (!selectionStart) return;
+  e.preventDefault();
+
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (!el || !el.classList || !el.classList.contains("cell") || el.classList.contains("blank")) {
+    clearActive();
+    currentTouchPath = null;
+    return;
+  }
+
+  const x = parseInt(el.dataset.x, 10);
+  const y = parseInt(el.dataset.y, 10);
+  const path = getLine(selectionStart.x, selectionStart.y, x, y);
+  currentTouchPath = path;
+}
+
+function handleTouchEnd(e) {
+  if (!selectionStart) return;
+
+  if (currentTouchPath) {
+    const matched = processSelection(currentTouchPath);
+    if (!matched) {
+      clearActive();
+    }
+  } else {
+    clearActive();
+  }
+
+  selectionStart = null;
+  currentTouchPath = null;
+}
+
+document.addEventListener("touchmove", handleTouchMove, { passive: false });
+document.addEventListener("touchend", handleTouchEnd);
+
+/* ==========================
+   CAPSULE HIGHLIGHTS
+========================== */
+
+function addWordHighlight(path, color) {
+  if (!path.length) return;
+
+  const rect = treeInner.getBoundingClientRect();
+
+  const firstCell = cells[path[0].y][path[0].x];
+  const lastCell  = cells[path[path.length - 1].y][path[path.length - 1].x];
+
+  const r1 = firstCell.getBoundingClientRect();
+  const r2 = lastCell.getBoundingClientRect();
+
+  const x1 = r1.left + r1.width / 2 - rect.left;
+  const y1 = r1.top  + r1.height / 2 - rect.top;
+  const x2 = r2.left + r2.width / 2 - rect.left;
+  const y2 = r2.top  + r2.height / 2 - rect.top;
+
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.sqrt(dx * dx + dy * dy) + 26;
+  const angle  = Math.atan2(dy, dx) * 180 / Math.PI;
+  const centerX = (x1 + x2) / 2;
+  const centerY = (y1 + y2) / 2;
+
+  const thickness = 34;
+
+  const highlight = document.createElement("div");
+  highlight.className = "wordHighlight";
+  highlight.style.width  = length + "px";
+  highlight.style.height = thickness + "px";
+  highlight.style.left   = (centerX - length / 2) + "px";
+  highlight.style.top    = (centerY - thickness / 2) + "px";
+  highlight.style.transform = `rotate(${angle}deg)`;
+  highlight.style.background = color;
+
+  treeInner.appendChild(highlight);
+  wordHighlights.push(highlight);
+}
+
+/* ==========================
+   WIN + RESTART
+========================== */
+
+function onWin() {
+  if (navigator.vibrate) navigator.vibrate(150);
+  startConfetti();
+
+  winMessage.style.display = "block";
+  setTimeout(() => {
+    winMessage.style.opacity = "1";
+    winMessage.style.transform = "translateY(0)";
+    restartBtn.style.opacity = "1";
+    restartBtn.style.transform = "translateY(0)";
+  }, 80);
+}
+
+restartBtn.addEventListener("click", restartGame);
+
+function restartGame() {
+  stopConfetti();
+
+  selectionStart = null;
+  currentTouchPath = null;
+  clearActive();
+  foundCount = 0;
+
+  // reset words + cells
+  words.forEach(w => {
+    w.found = false;
+    w.liElement.classList.remove("foundWord");
+  });
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const c = cells[y][x];
+      if (c) c.classList.remove("found");
+    }
+  }
+
+  // remove highlights
+  wordHighlights.forEach(h => h.remove());
+  wordHighlights = [];
+
+  winMessage.style.opacity = "0";
+  winMessage.style.transform = "translateY(18px)";
+  restartBtn.style.opacity = "0";
+  restartBtn.style.transform = "translateY(8px)";
+  setTimeout(() => {
+    winMessage.style.display = "none";
+  }, 400);
+}
+</script>
+</body>
+</html>
