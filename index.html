@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wortsuche – Türchen 12</title>
 
-  <!-- Festive Calligraphy Font -->
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
   <style>
@@ -55,9 +54,9 @@
 
     /* Frame around puzzle + word list */
     #frame {
-      padding: 15px 20px;
-      border: 8px solid #b30000;
-      border-radius: 20px;
+      padding: 12px 16px; /* ADJUSTED */
+      border: 6px solid #b30000; /* ADJUSTED */
+      border-radius: 16px; /* ADJUSTED */
       background: rgba(255,255,255,0.8);
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
       margin-top: 20px;
@@ -65,23 +64,21 @@
       position: relative;
       display: flex;
       flex-wrap: wrap;
-      gap: 32px;
+      gap: 20px; /* ADJUSTED */
       justify-content: center;
       align-items: flex-start;
-      max-width: 900px;
+      max-width: 700px; /* ADJUSTED */
     }
 
+    /* Tree wrapper */
     #treeWrapper {
-      padding: 10px;
-      border-radius: 24px;
-    }
-
-    /* New inner wrapper so SVG and grid align perfectly */
-    #treeInner {
       position: relative;
       display: inline-block;
+      padding: 10px 12px; /* ADJUSTED */
+      border-radius: 20px; /* ADJUSTED */
     }
 
+    /* Tree outline SVG */
     #treeSvgWrapper {
       position: absolute;
       inset: 0;
@@ -89,36 +86,82 @@
       z-index: 0;
     }
 
+/* SCALE + OFFSET FOR THE OUTLINE */
+#treeSvgScale {
+  position: absolute;
+  inset: 0;
+  transform-origin: center;
+  transform: scale(1.06) translateY(-4px); /* ADJUSTED */
+  pointer-events: none;
+  z-index: 0;
+}
+
     #treeSvg {
       width: 100%;
       height: 100%;
-      display: block;
     }
-
     .tree-outline {
       fill: none;
-      stroke: #0ea350;
-      stroke-width: 3;
+      stroke: #0b7a24;
+      stroke-width: 3.2;
       stroke-linejoin: round;
-      filter: drop-shadow(0 0 5px rgba(14,163,80,0.8));
+      filter: drop-shadow(0 0 6px rgba(0,128,0,0.6));
+    }
+    .tree-garland {
+      fill: #d4af37;
+      filter: drop-shadow(0 0 5px rgba(212,175,55,0.9));
+    }
+    .tree-star {
+      fill: #ffd700;
+      stroke: #f4c542;
+      stroke-width: 1;
+      filter: drop-shadow(0 0 8px rgba(255,215,0,0.9));
+    }
+    .tree-sparkle {
+      fill: #ffffff;
+      opacity: 0.9;
     }
 
-    #treeGrid {
-      position: relative;
-      z-index: 2;
-      display: grid;
-      grid-template-columns: repeat(19, 30px);
-      grid-auto-rows: 30px;
-      gap: 4px;
-      justify-content: center;
-      user-select: none;
-      touch-action: none;
-    }
+   /* Responsive grid cell size */
+#treeGrid {
+  --cell: 22px;     /* default desktop size - ADJUSTED from 30px */
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(19, var(--cell));
+  grid-auto-rows: var(--cell);
+  gap: 3px;         /* ADJUSTED from 4px */
+  justify-content: center;
+  user-select: none;
+  touch-action: none;
+  padding: 6px;     /* ADJUSTED from 8px */
+}
+
+/* Shrink grid on mobile screens */
+@media (max-width: 650px) { /* Changed from 600px to 650px to match stacking breakpoint */
+  #treeGrid {
+    --cell: 18px;   /* mobile size - ADJUSTED from 22px */
+  }
+}
+
+/* Word panel stacking kept at 650px */
+@media (max-width: 650px) {
+  #frame {
+    flex-direction: column;
+    align-items: center;
+  }
+  #wordPanel {
+    align-self: stretch;
+  }
+  #wordPanel h3 {
+    text-align: left;
+  }
+}
 
     .cell {
-      width: 30px;
-      height: 30px;
-      border-radius: 7px;
+      width: var(--cell); /* ADJUSTED to use variable */
+      height: var(--cell); /* ADJUSTED to use variable */
+      border-radius: 5px; /* ADJUSTED from 7px */
       border: none;
       background: transparent;
       display: flex;
@@ -147,8 +190,8 @@
     }
 
     .cell.active {
-      background: rgba(255,255,255,0.2);
-      box-shadow: 0 0 6px rgba(179,0,0,0.4);
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 0 6px rgba(179,0,0,0.5);
     }
 
     .cell.found {
@@ -160,7 +203,7 @@
       position: absolute;
       z-index: 1; /* behind letters but above outline */
       border-radius: 999px;
-      border: 2px solid rgba(255,255,255,0.9);
+      border: 2px solid rgba(255,255,255,0.7);
       box-shadow:
         0 0 8px rgba(0,0,0,0.25),
         0 0 16px rgba(0,0,0,0.15);
@@ -171,7 +214,7 @@
 
     /* Word list */
     #wordPanel {
-      min-width: 180px;
+      min-width: 150px; /* ADJUSTED from 180px */
     }
 
     #wordPanel h3 {
@@ -258,26 +301,11 @@
       from { opacity: 1; }
       to   { opacity: 0; }
     }
-
-    /* Responsive word panel stacking */
-    @media (max-width: 650px) {
-      #frame {
-        flex-direction: column;
-        align-items: center;
-      }
-      #wordPanel {
-        align-self: stretch;
-      }
-      #wordPanel h3 {
-        text-align: left;
-      }
-    }
   </style>
 </head>
 
 <body>
 
-  <!-- Confetti canvas -->
   <canvas id="confettiCanvas"
           style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
                  pointer-events: none; z-index: 999999; display: none;"></canvas>
@@ -287,19 +315,48 @@
 
   <div id="frame">
     <div id="treeWrapper">
-      <div id="treeInner">
-        <div id="treeSvgWrapper">
-          <svg id="treeSvg"></svg>
-        </div>
-        <div id="treeGrid"></div>
-      </div>
+      <div id="treeSvgWrapper">
+  <div id="treeSvgScale">
+    <svg id="treeSvg" viewBox="0 0 200 260" preserveAspectRatio="xMidYMid meet">
+
+          <polygon class="tree-star"
+                   points="100,8 106,22 121,22 109,31 114,45 100,37 86,45 91,31 79,22 94,22"/>
+          <path class="tree-outline"
+      d="M100 18
+         L40 80 L75 80
+         L5 150 L53 150
+         L-20 220 L30 220
+         L126 220 L220 220
+         L147 150 L193 150
+         L126 79 L160 79 Z" />
+
+          <circle class="tree-garland" cx="50" cy="70" r="3.2"/>
+          <circle class="tree-garland" cx="130" cy="78" r="3.2"/>
+          <circle class="tree-garland" cx="45" cy="110" r="3.2"/>
+          <circle class="tree-garland" cx="165" cy="120" r="3.2"/>
+          <circle class="tree-garland" cx="65" cy="150" r="3.2"/>
+          <circle class="tree-garland" cx="115" cy="160" r="3.2"/>
+          <circle class="tree-garland" cx="10" cy="190" r="3.2"/>
+          <circle class="tree-garland" cx="195" cy="195" r="3.2"/>
+
+          <circle class="tree-sparkle" cx="55" cy="52" r="1.8"/>
+          <circle class="tree-sparkle" cx="145" cy="70" r="1.8"/>
+          <circle class="tree-sparkle" cx="50" cy="125" r="1.5"/>
+          <circle class="tree-sparkle" cx="155" cy="135" r="1.5"/>
+          <circle class="tree-sparkle" cx="60" cy="200" r="1.5"/>
+          <circle class="tree-sparkle" cx="150" cy="210" r="1.5"/>
+          </svg>
+  </div>
+</div>
+
+
+      <div id="treeGrid"></div>
     </div>
 
     <div id="wordPanel">
       <h3>WORTLISTE</h3>
       <ul id="wordList">
-        <!-- filled by JS -->
-      </ul>
+        </ul>
     </div>
   </div>
 
@@ -451,14 +508,9 @@ const solutionColors = [
 
 const treeGrid    = document.getElementById("treeGrid");
 const treeWrapper = document.getElementById("treeWrapper");
-const treeInner   = document.getElementById("treeInner");
-const treeSvg     = document.getElementById("treeSvg");
 const wordListEl  = document.getElementById("wordList");
 const winMessage  = document.getElementById("winMessage");
 const restartBtn  = document.getElementById("restartButton");
-
-const cellSize = 30;
-const gap = 4;
 
 let width = 0;
 treeRows.forEach(r => { if (r.length > width) width = r.length; });
@@ -504,135 +556,6 @@ words.forEach((w, index) => {
   w.liElement = li;
   w.found = false;
 });
-
-/* ==========================
-   AUTO-GENERATED TREE OUTLINE
-   (computed from the letter grid)
-========================== */
-
-function generateTreeOutline() {
-  const pad = 3; // distance from letters
-  const rowBounds = [];
-
-  for (let y = 0; y < height; y++) {
-    let minCol = null;
-    let maxCol = null;
-    for (let x = 0; x < width; x++) {
-      if (board[y][x] !== null) {
-        if (minCol === null || x < minCol) minCol = x;
-        if (maxCol === null || x > maxCol) maxCol = x;
-      }
-    }
-    if (minCol !== null) {
-      rowBounds.push({ y, minCol, maxCol });
-    }
-  }
-
-  if (!rowBounds.length) return;
-
-  const topRow = rowBounds[0].y;
-  const bottomRow = rowBounds[rowBounds.length - 1].y;
-
-  const gridPixelWidth  = width * cellSize + (width - 1) * gap;
-  const gridPixelHeight = height * cellSize + (height - 1) * gap;
-
-  treeSvg.setAttribute("viewBox", `0 0 ${gridPixelWidth} ${gridPixelHeight}`);
-
-  const topPoints = [];
-  const rightPoints = [];
-  const bottomPoints = [];
-  const leftPoints = [];
-
-  // helper to convert (x,y cell coords) to pixel boundaries
-  function colLeft(c)  { return c * (cellSize + gap); }
-  function colRight(c) { return c * (cellSize + gap) + cellSize; }
-  function rowTop(r)   { return r * (cellSize + gap); }
-  function rowBottom(r){ return r * (cellSize + gap) + cellSize; }
-
-  // build outline points
-  for (let i = 0; i < rowBounds.length; i++) {
-    const { y, minCol, maxCol } = rowBounds[i];
-    const tY = rowTop(y) - pad;
-    const bY = rowBottom(y) + pad;
-    const lX = colLeft(minCol) - pad;
-    const rX = colRight(maxCol) + pad;
-
-    // top edge points (right side of the tree)
-    topPoints.push({ x: lX, y: tY });
-    topPoints.push({ x: rX, y: tY });
-
-    // right edge mid
-    rightPoints.push({ x: rX, y: (tY + bY) / 2 });
-
-    // bottom edge
-    bottomPoints.push({ x: rX, y: bY });
-    bottomPoints.push({ x: lX, y: bY });
-
-    // left edge mid
-    leftPoints.push({ x: lX, y: (tY + bY) / 2 });
-  }
-
-  // Construct polygon: top (from first row), then right side down,
-  // then bottom of last row, then left side up, then close.
-  const pts = [];
-
-  // top: from left to right of first row
-  const firstTop = rowBounds[0];
-  {
-    const y = firstTop.y;
-    const tY = rowTop(y) - pad;
-    const lX = colLeft(firstTop.minCol) - pad;
-    const rX = colRight(firstTop.maxCol) + pad;
-    pts.push({ x: lX, y: tY });
-    pts.push({ x: rX, y: tY });
-  }
-
-  // right side: from second row to last
-  for (let i = 1; i < rowBounds.length; i++) {
-    const { y, maxCol } = rowBounds[i];
-    const tY = rowTop(y) - pad;
-    const bY = rowBottom(y) + pad;
-    const rX = colRight(maxCol) + pad;
-    pts.push({ x: rX, y: (tY + bY) / 2 });
-  }
-
-  // bottom edge of last row
-  const lastBottom = rowBounds[rowBounds.length - 1];
-  {
-    const y = lastBottom.y;
-    const bY = rowBottom(y) + pad;
-    const lX = colLeft(lastBottom.minCol) - pad;
-    const rX = colRight(lastBottom.maxCol) + pad;
-    pts.push({ x: rX, y: bY });
-    pts.push({ x: lX, y: bY });
-  }
-
-  // left side: from second-last row up to first
-  for (let i = rowBounds.length - 2; i >= 0; i--) {
-    const { y, minCol } = rowBounds[i];
-    const tY = rowTop(y) - pad;
-    const bY = rowBottom(y) + pad;
-    const lX = colLeft(minCol) - pad;
-    pts.push({ x: lX, y: (tY + bY) / 2 });
-  }
-
-  // close back to top-left (already there logically)
-  // Build path string
-  let d = "";
-  pts.forEach((p, i) => {
-    d += (i === 0 ? "M" : "L") + p.x + " " + p.y + " ";
-  });
-  d += "Z";
-
-  treeSvg.innerHTML = "";
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("class", "tree-outline");
-  path.setAttribute("d", d);
-  treeSvg.appendChild(path);
-}
-
-// Generate outline after layout
-window.addEventListener("load", generateTreeOutline);
 
 /* ==========================
    SELECTION + TOUCH LOGIC
@@ -818,27 +741,28 @@ document.addEventListener("touchend", handleTouchEnd);
 function addWordHighlight(path, color) {
   if (!path.length) return;
 
-  const rect = treeInner.getBoundingClientRect();
-
+  const wrapperRect = treeWrapper.getBoundingClientRect();
   const firstCell = cells[path[0].y][path[0].x];
   const lastCell  = cells[path[path.length - 1].y][path[path.length - 1].x];
 
   const r1 = firstCell.getBoundingClientRect();
   const r2 = lastCell.getBoundingClientRect();
 
-  const x1 = r1.left + r1.width / 2 - rect.left;
-  const y1 = r1.top  + r1.height / 2 - rect.top;
-  const x2 = r2.left + r2.width / 2 - rect.left;
-  const y2 = r2.top  + r2.height / 2 - rect.top;
+  const x1 = r1.left + r1.width / 2 - wrapperRect.left;
+  const y1 = r1.top  + r1.height / 2 - wrapperRect.top;
+  const x2 = r2.left + r2.width / 2 - wrapperRect.left;
+  const y2 = r2.top  + r2.height / 2 - wrapperRect.top;
 
   const dx = x2 - x1;
   const dy = y2 - y1;
-  const length = Math.sqrt(dx * dx + dy * dy) + 26;
+  const length = Math.sqrt(dx * dx + dy * dy) + 26; // padding
   const angle  = Math.atan2(dy, dx) * 180 / Math.PI;
   const centerX = (x1 + x2) / 2;
   const centerY = (y1 + y2) / 2;
 
-  const thickness = 34;
+  const thickness = 26; // ADJUSTED from 34
+  // We need to re-calculate the thickness based on the current cell size (22px) + padding. 
+  // Let's use 26px to be safe (22px cell height + 4px padding/margin).
 
   const highlight = document.createElement("div");
   highlight.className = "wordHighlight";
@@ -849,7 +773,7 @@ function addWordHighlight(path, color) {
   highlight.style.transform = `rotate(${angle}deg)`;
   highlight.style.background = color;
 
-  treeInner.appendChild(highlight);
+  treeWrapper.appendChild(highlight);
   wordHighlights.push(highlight);
 }
 
