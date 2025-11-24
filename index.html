@@ -54,9 +54,9 @@
 
     /* Frame around puzzle + word list */
     #frame {
-      padding: 12px 16px; /* ADJUSTED */
-      border: 6px solid #b30000; /* ADJUSTED */
-      border-radius: 16px; /* ADJUSTED */
+      padding: 12px 16px;
+      border: 6px solid #b30000;
+      border-radius: 16px;
       background: rgba(255,255,255,0.8);
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
       margin-top: 20px;
@@ -64,18 +64,18 @@
       position: relative;
       display: flex;
       flex-wrap: wrap;
-      gap: 20px; /* ADJUSTED */
+      gap: 20px;
       justify-content: center;
       align-items: flex-start;
-      max-width: 700px; /* ADJUSTED */
+      max-width: 700px;
     }
 
     /* Tree wrapper */
     #treeWrapper {
       position: relative;
       display: inline-block;
-      padding: 10px 12px; /* ADJUSTED */
-      border-radius: 20px; /* ADJUSTED */
+      padding: 10px 12px;
+      border-radius: 20px;
     }
 
     /* Tree outline SVG */
@@ -91,7 +91,7 @@
   position: absolute;
   inset: 0;
   transform-origin: center;
-  transform: scale(1.06) translateY(-4px); /* ADJUSTED */
+  transform: scale(1.06) translateY(-4px);
   pointer-events: none;
   z-index: 0;
 }
@@ -124,44 +124,31 @@
 
    /* Responsive grid cell size */
 #treeGrid {
-  --cell: 22px;     /* default desktop size - ADJUSTED from 30px */
+  --cell: 22px;
   position: relative;
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(19, var(--cell));
   grid-auto-rows: var(--cell);
-  gap: 3px;         /* ADJUSTED from 4px */
+  gap: 3px;
   justify-content: center;
   user-select: none;
   touch-action: none;
-  padding: 6px;     /* ADJUSTED from 8px */
+  padding: 6px;
 }
 
 /* Shrink grid on mobile screens */
-@media (max-width: 650px) { /* Changed from 600px to 650px to match stacking breakpoint */
+@media (max-width: 650px) {
   #treeGrid {
-    --cell: 18px;   /* mobile size - ADJUSTED from 22px */
+    --cell: 18px;
   }
 }
 
-/* Word panel stacking kept at 650px */
-@media (max-width: 650px) {
-  #frame {
-    flex-direction: column;
-    align-items: center;
-  }
-  #wordPanel {
-    align-self: stretch;
-  }
-  #wordPanel h3 {
-    text-align: left;
-  }
-}
 
     .cell {
-      width: var(--cell); /* ADJUSTED to use variable */
-      height: var(--cell); /* ADJUSTED to use variable */
-      border-radius: 5px; /* ADJUSTED from 7px */
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: 5px;
       border: none;
       background: transparent;
       display: flex;
@@ -214,7 +201,7 @@
 
     /* Word list */
     #wordPanel {
-      min-width: 150px; /* ADJUSTED from 180px */
+      min-width: 150px;
     }
 
     #wordPanel h3 {
@@ -300,6 +287,23 @@
     @keyframes confettiFadeOut {
       from { opacity: 1; }
       to   { opacity: 0; }
+    }
+
+    /* Responsive word panel stacking */
+    @media (max-width: 650px) {
+      #frame {
+        flex-direction: column;
+        align-items: center;
+      }
+      #wordPanel {
+        text-align: center; /* ADDED: Center block-level content (like <ul>) */
+      }
+      #wordPanel h3 {
+        text-align: center; /* CHANGED: Center the heading */
+      }
+      #wordPanel ul {
+        display: inline-block; /* ADDED: Allows the <ul> to be centered by parent's text-align */
+      }
     }
   </style>
 </head>
@@ -760,9 +764,7 @@ function addWordHighlight(path, color) {
   const centerX = (x1 + x2) / 2;
   const centerY = (y1 + y2) / 2;
 
-  const thickness = 26; // ADJUSTED from 34
-  // We need to re-calculate the thickness based on the current cell size (22px) + padding. 
-  // Let's use 26px to be safe (22px cell height + 4px padding/margin).
+  const thickness = 26; // capsule height
 
   const highlight = document.createElement("div");
   highlight.className = "wordHighlight";
